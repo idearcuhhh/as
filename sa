@@ -1,0 +1,162 @@
+-- Function to create the GUI
+local function createGUI()
+    local player = game.Players.LocalPlayer
+    local playerGui = player:WaitForChild("PlayerGui")
+
+    -- Check if GUI already exists and remove it if it does
+    local existingGui = playerGui:FindFirstChild("MyScreenGui")
+    if existingGui then
+        existingGui:Destroy()
+    end
+
+    -- Create the ScreenGui
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "MyScreenGui"
+    screenGui.Parent = playerGui
+
+    -- Create the Frame
+    local frame = Instance.new("Frame")
+    frame.Name = "MyFrame"
+    frame.Size = UDim2.new(0, 339, 0, 155)  -- Size: {0, 339},{0, 155}
+    frame.Position = UDim2.new(0.5, 0, 0.5, 0)  -- Center position
+    frame.AnchorPoint = Vector2.new(0.5, 0.5)  -- Center the anchor point
+    frame.BackgroundColor3 = Color3.fromRGB(29, 29, 29)  -- Color: {29, 29, 29}
+    frame.BackgroundTransparency = 0.7  -- Transparency: 0.7
+    frame.Parent = screenGui
+
+    -- Add UICorner to the Frame
+    local frameUICorner = Instance.new("UICorner")
+    frameUICorner.CornerRadius = UDim.new(0, 12)  -- Corner radius: {0, 12}
+    frameUICorner.Parent = frame
+
+    -- Create the first TextBox
+    local textBox1 = Instance.new("TextBox")
+    textBox1.Name = "TextBox1"
+    textBox1.Size = UDim2.new(0, 142, 0, 68)  -- Size: {0, 142},{0, 68}
+    textBox1.Position = UDim2.new(0.065, 0, 0.28, 0)  -- Position: {0.065, 0},{0.28, 0}
+    textBox1.BackgroundColor3 = Color3.fromRGB(84, 84, 84)  -- Color: {84, 84, 84}
+    textBox1.BackgroundTransparency = 0.5  -- Transparency: 0.5
+    textBox1.Text = ""  -- Initial text
+    textBox1.TextColor3 = Color3.fromRGB(255, 255, 255)  -- Text color: white
+    textBox1.TextScaled = true  -- Make the text scale to fit the TextBox
+    textBox1.TextWrapped = true  -- Wrap the text within the TextBox
+    textBox1.ClearTextOnFocus = false  -- Prevent the text from clearing on focus
+    textBox1.TextEditable = false  -- Make the TextBox non-editable
+    textBox1.Parent = frame
+
+    -- Add UICorner to the first TextBox
+    local textBox1UICorner = Instance.new("UICorner")
+    textBox1UICorner.CornerRadius = UDim.new(0, 9)  -- Corner radius: {0, 9}
+    textBox1UICorner.Parent = textBox1
+
+    -- Create the second TextBox
+    local textBox2 = Instance.new("TextBox")
+    textBox2.Name = "TextBox2"
+    textBox2.Size = UDim2.new(0, 142, 0, 68)  -- Size: {0, 142},{0, 68}
+    textBox2.Position = UDim2.new(0.516, 0, 0.28, 0)  -- Position: {0.516, 0},{0.28, 0}
+    textBox2.BackgroundColor3 = Color3.fromRGB(84, 84, 84)  -- Color: {84, 84, 84}
+    textBox2.BackgroundTransparency = 0.5  -- Transparency: 0.5
+    textBox2.Text = ""  -- Initial text
+    textBox2.TextColor3 = Color3.fromRGB(255, 255, 255)  -- Text color: white
+    textBox2.TextScaled = true  -- Make the text scale to fit the TextBox
+    textBox2.TextWrapped = true  -- Wrap the text within the TextBox
+    textBox2.ClearTextOnFocus = false  -- Prevent the text from clearing on focus
+    textBox2.TextEditable = false  -- Make the TextBox non-editable
+    textBox2.Parent = frame
+
+    -- Add UICorner to the second TextBox
+    local textBox2UICorner = Instance.new("UICorner")
+    textBox2UICorner.CornerRadius = UDim.new(0, 9)  -- Corner radius: {0, 9}
+    textBox2UICorner.Parent = textBox2
+
+    -- Function to format numbers
+    local function format_number(number)
+        local suffixes = {"", "K", "M", "B", "T", "QD"}
+        local suffix_index = 1
+
+        while math.abs(number) >= 1000 and suffix_index < #suffixes do
+            number = number / 1000.0
+            suffix_index = suffix_index + 1
+        end
+
+        return string.format("%.2f%s", number, suffixes[suffix_index])
+    end
+
+    -- Function to update textboxes
+    local function updateTextBoxes()
+        local player = game:GetService("Players").LocalPlayer
+        local playerStats = game:GetService("ReplicatedStorage"):FindFirstChild("Datas"):FindFirstChild(tostring(player.UserId))
+
+        if playerStats then
+            -- Fetch rebirth data
+            local playerRebirths = playerStats:FindFirstChild("Rebirth")
+            if playerRebirths then
+                textBox1.Text = "Rebirths: " .. format_number(playerRebirths.Value)
+            else
+                textBox1.Text = "Rebirths: N/A"
+            end
+
+            -- Fetch energy data
+            local playerEnergy = playerStats:FindFirstChild("Energy")
+            if playerEnergy then
+                textBox2.Text = "Stats: " .. format_number(playerEnergy.Value)
+            else
+                textBox2.Text = "Energy: N/A"
+            end
+        else
+            textBox1.Text = "Player data not found"
+            textBox2.Text = "Player data not found"
+        end
+    end
+
+    -- LocalScript to make the frame draggable
+    local function makeDraggable(frame)
+        local dragToggle = false
+        local dragStart = nil
+        local startPos = nil
+
+        local function update(input)
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+
+        frame.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                dragToggle = true
+                dragStart = input.Position
+                startPos = frame.Position
+                input.Changed:Connect(function()
+                    if input.UserInputState == Enum.UserInputState.End then
+                        dragToggle = false
+                    end
+                end)
+            end
+        end)
+
+        frame.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement and dragToggle then
+                update(input)
+            end
+        end)
+    end
+
+    -- Make the frame draggable
+    makeDraggable(frame)
+
+    -- Update textboxes every 0.3 seconds
+    while true do
+        updateTextBoxes()
+        wait(0.3)
+    end
+end
+
+-- Function to handle player respawn
+local function onPlayerRespawn()
+    createGUI()
+end
+
+-- Connect to player respawn event
+game.Players.LocalPlayer.CharacterAdded:Connect(onPlayerRespawn)
+
+-- Create GUI initially
+createGUI()
